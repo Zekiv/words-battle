@@ -1,0 +1,315 @@
+/* style_2d.css */
+body {
+    margin: 0;
+    overflow-y: auto; /* Allow scrolling if content exceeds viewport height */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #333; /* Darker background */
+    color: #eee;
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center; /* Center vertically for shorter content */
+    align-items: center; /* Center horizontally */
+    min-height: 100vh; /* Ensure centering works vertically */
+    padding: 20px 0; /* Add some padding top/bottom */
+    box-sizing: border-box;
+}
+
+/* New wrapper for centering and managing the two main blocks */
+#main-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; /* Take full width for alignment */
+}
+
+
+#game-container {
+    position: relative; /* Crucial for absolute positioning inside */
+    width: 800px; /* Fixed width */
+    height: 450px; /* Fixed height */
+    max-width: 95%; /* Prevent overflow on very small screens */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    border-radius: 5px; /* Slight rounding */
+    overflow: hidden; /* Clip canvas */
+    margin-bottom: 15px; /* Space between game and controls */
+}
+
+#game-canvas-2d {
+    display: block; /* Remove extra space below canvas */
+    /* Background is drawn in JS, but fallback: */
+    background-color: #5d9e5f;
+    width: 100%; /* Fill container */
+    height: 100%;
+}
+
+/* Overlay covers ONLY the game container now */
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allow clicks to pass to canvas if needed, but enable for boxes */
+    display: flex; /* Keeps centering logic for nickname/gameover */
+    flex-direction: column;
+    justify-content: center; /* Center nickname prompt */
+    align-items: center;
+    z-index: 10; /* Ensure UI is above canvas */
+}
+
+.overlay-box {
+    background-color: rgba(0, 0, 0, 0.75);
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin: 5px; /* Default margin */
+    pointer-events: all; /* Enable pointer events for UI elements */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 11; /* Ensure these boxes are clickable */
+}
+
+/* --- Positioning for UI elements INSIDE the overlay --- */
+
+/* Nickname prompt centered by default */
+#nickname-prompt {
+     width: 300px;
+}
+#nickname-prompt h2 { margin-top: 0; color: #ffcc00; }
+#nickname-input {
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #555;
+    background-color: #444;
+    color: #eee;
+    border-radius: 4px;
+    width: calc(100% - 20px); /* Full width minus padding */
+}
+#join-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+#join-button:hover {
+    background-color: #0056b3;
+}
+#connection-status {
+    font-size: 0.9em;
+    color: #aaa;
+    margin-top: 10px;
+    min-height: 1.2em;
+}
+
+/* Game Over screen, also centered by default */
+#game-over {
+    width: 350px;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border: 2px solid #ffcc00;
+}
+#game-over-message { color: #ffcc00; margin-top: 0; }
+#play-again-button {
+     padding: 12px 25px;
+     margin-top: 20px;
+     background-color: #007bff;
+     color: white;
+     border: none;
+     border-radius: 4px;
+     cursor: pointer;
+     font-size: 1.1em;
+}
+#play-again-button:hover { background-color: #0056b3; }
+
+
+/* Player Info (Top Corners) */
+.player-info {
+    position: absolute; /* Position relative to game-container */
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    min-width: 140px;
+    text-align: left;
+    font-size: 0.9em;
+    /* display: none; Added inline style in HTML, controlled by JS */
+}
+.player-info h3 { margin: 0 0 5px 0; font-size: 1.1em;}
+.player1-info { top: 10px; left: 10px; }
+.player2-info { top: 10px; right: 10px; text-align: right;}
+
+.hp-bar-container {
+    width: 100%;
+    height: 12px;
+    background-color: #555;
+    border-radius: 4px;
+    margin: 5px 0;
+    overflow: hidden;
+    border: 1px solid #888;
+}
+.hp-bar {
+    height: 100%;
+    width: 100%; /* Start full */
+    background-color: #4CAF50; /* Default green */
+    border-radius: 3px;
+    transition: width 0.5s ease-out;
+}
+/* Use specific colors for bars */
+#player1-hp-bar { background-color: #4CAF50; }
+#player2-hp-bar { background-color: #F44336; }
+
+/* Center Info (Top Middle) */
+#center-info {
+    position: absolute; /* Position relative to game-container */
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 15px; /* Slimmer */
+     /* display: none; Added inline style in HTML, controlled by JS */
+}
+#timer { font-size: 1.1em; margin-bottom: 3px;}
+#game-message { font-size: 0.9em; color: #ffdd88; min-height: 1.2em; font-weight: bold; }
+
+
+/* --- Player Controls Area BELOW Canvas --- */
+
+#player-controls {
+    /* Removed position: absolute */
+    /* Now a block element positioned by the flex container (#main-wrapper) */
+    width: 800px; /* Match game container width */
+    max-width: 95%; /* Responsive */
+    display: flex; /* Use flex for internal alignment */
+    flex-direction: column;
+    align-items: center;
+    padding: 15px; /* More padding */
+    box-sizing: border-box; /* Include padding in width */
+    /* display: none; Added inline style in HTML, controlled by JS */
+    /* Inherits .overlay-box styles (background, border-radius etc) */
+}
+
+#letters-display {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Allow tiles to wrap if needed */
+    gap: 6px;
+    margin-bottom: 15px; /* More space */
+    background-color: rgba(0, 0, 0, 0.3); /* Slight background for tiles */
+    padding: 8px;
+    border-radius: 4px;
+    width: auto; /* Adjust width based on content */
+    max-width: 100%;
+    min-height: 45px; /* Prevent collapsing when empty */
+}
+.letter-tile {
+    background-color: #e0d6b3;
+    color: #3b3a39;
+    font-weight: bold;
+    font-size: 1.5em; /* Make tiles slightly larger */
+    width: 45px;
+    height: 45px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #a89f85;
+    border-radius: 4px;
+    user-select: none;
+    box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+    cursor: default; /* Indicate not clickable */
+}
+
+/* Input and Button row */
+#input-row {
+    display: flex;
+    width: 100%;
+    max-width: 500px; /* Limit width of input row */
+    gap: 10px; /* More space between input and button */
+    margin-bottom: 10px; /* Space before feedback */
+}
+
+#word-input {
+    padding: 10px;
+    flex-grow: 1; /* Take available space */
+    border: 1px solid #555;
+    background-color: #444;
+    color: #eee;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-size: 1em;
+}
+#word-input::placeholder {
+    color: #aaa;
+    text-transform: none;
+}
+#word-input:disabled {
+     background-color: #555;
+     cursor: not-allowed;
+     color: #999;
+}
+
+
+#submit-word-button {
+    padding: 10px 18px;
+    flex-shrink: 0; /* Prevent button from shrinking too much */
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 1em;
+    font-weight: bold;
+}
+#submit-word-button:hover {
+    background-color: #218838;
+}
+#submit-word-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    color: #aaa; /* Dim text color when disabled */
+}
+
+#word-feedback {
+    margin-top: 5px;
+    min-height: 1.4em; /* Slightly more space */
+    font-size: 0.95em; /* Slightly larger feedback */
+    color: #ffdddd; /* Default error-ish color */
+    font-weight: bold;
+    width: 100%;
+    max-width: 500px; /* Match input row */
+    text-align: center;
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 820px) {
+    #game-container {
+        width: 95vw;
+        height: calc(95vw * (450 / 800)); /* Maintain aspect ratio */
+        margin-bottom: 10px;
+    }
+     #player-controls {
+        width: 95vw;
+        padding: 10px;
+    }
+    .player-info { font-size: 0.8em; min-width: 100px; padding: 6px 8px; }
+    .letter-tile { width: 38px; height: 38px; font-size: 1.3em; }
+    #input-row { max-width: 90%; }
+    #word-input { font-size: 0.9em; padding: 8px; }
+    #submit-word-button { font-size: 0.9em; padding: 8px 12px; }
+    #word-feedback { font-size: 0.9em; }
+}
+
+@media (max-width: 450px) {
+     .letter-tile { width: 32px; height: 32px; font-size: 1.1em; gap: 4px;}
+     #input-row { flex-direction: column; gap: 8px; } /* Stack input/button on very small screens */
+     #submit-word-button { width: 100%; }
+     .player-info h3 { font-size: 1em; }
+     .player-info { font-size: 0.75em; min-width: 80px; }
+     #center-info { padding: 3px 10px; }
+     #timer { font-size: 1em; }
+     #game-message { font-size: 0.8em; }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "word-battle-2d",
+  "version": "1.0.0",
+  "description": "2D Multiplayer Word Battle Game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js", 
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Your Name", 
+  "license": "ISC", 
+  "dependencies": {
+    "express": "^4.17.1", 
+    "ws": "^8.0.0"        
+  },
+   "engines": {             
+    "node": ">=16.0.0"      
+  }
+}
