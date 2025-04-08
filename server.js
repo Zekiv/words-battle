@@ -27,7 +27,6 @@ try {
             const trimmedWord = word.trim().toLowerCase();
             if (trimmedWord.length > 1) { wordSet.add(trimmedWord); }
         });
-        console.log the two fully updated files, `server.js` and `script_2d.js`.
 
 These files contain the **full game logic** but include the critical changes we identified from the debugging steps:
 *   **Server:** Sends the correct WebSocket URL (`wss://...` on Render) via `serverConfig` and includes extra logging around this process.
