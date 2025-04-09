@@ -8,48 +8,26 @@
 </head>
 <body>
     <div id="main-wrapper">
+
+        <!-- Game Area: Canvas + Top/Center UI -->
         <div id="game-container">
             <canvas id="game-canvas-2d" width="800" height="450"></canvas>
             <div id="ui-overlay">
                 <!-- Player Info & Center Info -->
-                <div class="player-info player1-info" style="display: none;">
-                   <h3 id="player1-name">Player 1</h3>
-                   <div class="hp-bar-container"><div id="player1-hp-bar" class="hp-bar"></div></div>
-                   <span id="player1-hp">HP: 100</span>
-               </div>
-                <div class="player-info player2-info" style="display: none;">
-                   <h3 id="player2-name">Player 2</h3>
-                    <div class="hp-bar-container"><div id="player2-hp-bar" class="hp-bar"></div></div>
-                   <span id="player2-hp">HP: 100</span>
-               </div>
-                <div id="center-info" class="overlay-box" style="display: none;">
-                   <div id="timer">Time: 60</div>
-                   <div id="game-message">Waiting...</div>
-               </div>
+                <div class="player-info player1-info" style="display: none;"> <!-- ... --> </div>
+                <div class="player-info player2-info" style="display: none;"> <!-- ... --> </div>
+                <div id="center-info" class="overlay-box" style="display: none;"> <!-- ... --> </div>
 
                 <!-- Nickname Prompt & Game Over -->
-                <div id="nickname-prompt" class="overlay-box">
-                   <h2>Enter Your Nickname</h2>
-                   <input type="text" id="nickname-input" maxlength="12" placeholder="Max 12 chars">
-                   <button id="join-button" disabled>Join Battle!</button> <!-- Start disabled -->
-                   <p id="connection-status">Connecting...</p>
-                </div>
-                <div id="game-over" class="overlay-box" style="display: none;">
-                   <h2 id="game-over-message">Game Over!</h2>
-                   <button id="play-again-button">Play Again?</button>
-                </div>
+                <div id="nickname-prompt" class="overlay-box"> <!-- ... --> </div>
+                <div id="game-over" class="overlay-box" style="display: none;"> <!-- ... --> </div>
 
-                <!-- <<< Word History Box >>> -->
-                <div id="word-history-box" class="overlay-box" style="display: none;">
-                    <h4>Played Words</h4>
-                    <ul id="word-history-list">
-                        <!-- JS adds li elements here -->
-                    </ul>
-                </div>
-                <!-- <<< End Word History Box >>> -->
+                <!-- Word History Box is MOVED OUT of here -->
 
             </div>
         </div>
+
+        <!-- Player Controls Area: BELOW the game container -->
         <div id="player-controls" class="overlay-box" style="display: none;">
              <div id="letters-display"></div>
              <div id="input-row">
@@ -58,7 +36,17 @@
              </div>
              <div id="word-feedback"></div>
         </div>
-    </div>
+
+        <!-- Word History Box: BELOW player controls -->
+        <div id="word-history-box" class="overlay-box" style="display: none;">
+             <h4>Played Words</h4>
+             <ul id="word-history-list">
+                 <!-- Words will be added here by JS -->
+             </ul>
+        </div>
+        <!-- End Word History Box -->
+
+    </div> <!-- End of main-wrapper -->
     <script src="script_2d.js"></script>
 </body>
 </html>
