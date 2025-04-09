@@ -10,7 +10,6 @@
     <div id="main-wrapper">
         <div id="game-container">
             <canvas id="game-canvas-2d" width="800" height="450"></canvas>
-            <!-- Overlay for UI elements -->
             <div id="ui-overlay">
                 <!-- Player Info & Center Info -->
                 <div class="player-info player1-info" style="display: none;">
@@ -39,14 +38,9 @@
                    <h2 id="game-over-message">Game Over!</h2>
                    <button id="play-again-button">Play Again?</button>
                 </div>
-
-                <!-- Word History Box (Positioned by CSS below controls) -->
-                <!-- MOVED OUT OF OVERLAY in previous step -->
-
-            </div> <!-- End of ui-overlay -->
-        </div> <!-- End of game-container -->
-
-        <!-- Player Controls Area (Below game-container) -->
+                <!-- Waiting Overlay Removed -->
+            </div>
+        </div>
         <div id="player-controls" class="overlay-box" style="display: none;">
              <div id="letters-display"></div>
              <div id="input-row">
@@ -55,14 +49,11 @@
              </div>
              <div id="word-feedback"></div>
         </div>
-
-        <!-- Word History Box (Below player controls) -->
         <div id="word-history-box" class="overlay-box" style="display: none;">
              <h4>Played Words</h4>
              <ul id="word-history-list"></ul>
         </div>
-
-    </div> <!-- End of main-wrapper -->
+    </div>
     <script src="script_2d.js"></script>
 </body>
 </html>
