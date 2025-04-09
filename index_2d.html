@@ -10,7 +10,9 @@
     <div id="main-wrapper">
         <div id="game-container">
             <canvas id="game-canvas-2d" width="800" height="450"></canvas>
+            <!-- Overlay for UI elements -->
             <div id="ui-overlay">
+                <!-- Player Info & Center Info -->
                 <div class="player-info player1-info" style="display: none;">
                    <h3 id="player1-name">Player 1</h3>
                    <div class="hp-bar-container"><div id="player1-hp-bar" class="hp-bar"></div></div>
@@ -25,6 +27,8 @@
                    <div id="timer">Time: 60</div>
                    <div id="game-message">Waiting...</div>
                </div>
+
+                <!-- Nickname Prompt & Game Over -->
                 <div id="nickname-prompt" class="overlay-box">
                    <h2>Enter Your Nickname</h2>
                    <input type="text" id="nickname-input" maxlength="12" placeholder="Max 12 chars">
@@ -35,9 +39,14 @@
                    <h2 id="game-over-message">Game Over!</h2>
                    <button id="play-again-button">Play Again?</button>
                 </div>
-                <!-- History box is now outside overlay -->
-            </div>
-        </div>
+
+                <!-- Word History Box (Positioned by CSS below controls) -->
+                <!-- MOVED OUT OF OVERLAY in previous step -->
+
+            </div> <!-- End of ui-overlay -->
+        </div> <!-- End of game-container -->
+
+        <!-- Player Controls Area (Below game-container) -->
         <div id="player-controls" class="overlay-box" style="display: none;">
              <div id="letters-display"></div>
              <div id="input-row">
@@ -46,12 +55,14 @@
              </div>
              <div id="word-feedback"></div>
         </div>
-        <!-- Word History Box: BELOW player controls -->
+
+        <!-- Word History Box (Below player controls) -->
         <div id="word-history-box" class="overlay-box" style="display: none;">
              <h4>Played Words</h4>
              <ul id="word-history-list"></ul>
         </div>
-    </div>
+
+    </div> <!-- End of main-wrapper -->
     <script src="script_2d.js"></script>
 </body>
 </html>
