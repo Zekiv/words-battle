@@ -1,4 +1,4 @@
-// server.js (FINAL - Includes HP Fix Logging & Bloopers History)
+// server.js (Corrected handleCastleHit Logging - FINAL V3)
 const WebSocket = require('ws');
 const fs = require('fs');
 const http = require('http');
@@ -40,21 +40,21 @@ try {
 // --- Game Constants ---
 const STARTING_HP = 100;
 const LETTERS_PER_PLAYER = 10;
-const ROUND_TIME_MS = 60000; // 60 seconds
+const ROUND_TIME_MS = 60000;
 
 // --- Letter Distribution ---
 const VOWELS = "AEIOU";
 const CONSONANTS = "BCDFGHJKLMNPQRSTVWXYZ";
 const LETTER_POOL = (CONSONANTS.repeat(2) + VOWELS.repeat(3)).split('');
 
-// --- Enhanced getRandomLetters (Adjusted Defaults) ---
+// --- Enhanced getRandomLetters ---
 function getRandomLetters(count = LETTERS_PER_PLAYER, minVowels = 3, minConsonants = 3) {
     if (count !== LETTERS_PER_PLAYER) { minVowels = Math.floor(count * 0.3); minConsonants = Math.floor(count * 0.3); }
     let attempts = 0; const maxAttempts = 25;
     while (attempts < maxAttempts) {
         attempts++; let letters = []; let currentPool = [...LETTER_POOL]; let v = 0; let c = 0;
-        if (count > currentPool.length) { for (let i = 0; i < count; i++) { const idx=Math.floor(Math.random()*LETTER_POOL.length); const l=LETTER_POOL[idx]; letters.push(l); if(VOWELS.includes(l))v++; else c++; } }
-        else { for (let i = 0; i < count; i++) { if(currentPool.length===0)break; const idx=Math.floor(Math.random()*currentPool.length); const l=currentPool.splice(idx,1)[0]; letters.push(l); if(VOWELS.includes(l))v++; else c++; } }
+        if (count > currentPool.length) { for (let i = 0; i < count; i++) { const idx = Math.floor(Math.random() * LETTER_POOL.length); const l = LETTER_POOL[idx]; letters.push(l); if (VOWELS.includes(l)) v++; else c++; } }
+        else { for (let i = 0; i < count; i++) { if (currentPool.length === 0) break; const idx = Math.floor(Math.random() * currentPool.length); const l = currentPool.splice(idx, 1)[0]; letters.push(l); if (VOWELS.includes(l)) v++; else c++; } }
         if (letters.length === count && v >= minVowels && c >= minConsonants) return letters;
     }
     console.warn(`SERVER: getRandomLetters - Max attempts reached.`); let fallback = []; let fbPool = [...LETTER_POOL];
@@ -85,7 +85,7 @@ function startGame(gameId) {
     game.status = 'playing'; const p1 = players[game.player1Id]; const p2 = players[game.player2Id];
     if (!p1 || !p2) { console.error(`SERVER: Start ${gameId} fail`); game.status = 'aborted'; return; }
     p1.hp = STARTING_HP; p2.hp = STARTING_HP; p1.letters = getRandomLetters(); p2.letters = getRandomLetters();
-    game.createdTimestamp = Date.now(); game.playedWords = []; // Initialize playedWords
+    game.createdTimestamp = Date.now(); game.playedWords = [];
     console.log(`SERVER: Game ${gameId} starting: ${p1.nickname} vs ${p2.nickname}`);
     broadcast(gameId, { type: 'gameStart', gameId, player1: { id: p1.id, nickname: p1.nickname, hp: p1.hp }, player2: { id: p2.id, nickname: p2.nickname, hp: p2.hp }, timer: ROUND_TIME_MS });
     sendToPlayer(p1.id, { type: 'initialLetters', letters: p1.letters }); sendToPlayer(p2.id, { type: 'initialLetters', letters: p2.letters });
@@ -97,83 +97,74 @@ function endRound(gameId) {
     clearTimeout(game.turnTimer); game.turnTimer = null; const p1 = players[game.player1Id]; const p2 = players[game.player2Id];
     if (!p1 || !p2) { console.log(`SERVER: Abort new round ${gameId}, players missing.`); game.status = 'aborted'; return; }
     p1.letters = getRandomLetters(); p2.letters = getRandomLetters(); console.log(`SERVER: Game ${gameId} - New round.`);
-    // Send history and timer in broadcast
     broadcast(gameId, { type: 'newRound', timer: ROUND_TIME_MS, playedWords: game.playedWords || [] });
-    // Send specific letters
     sendToPlayer(p1.id, {type: 'updateLetters', letters: p1.letters}); sendToPlayer(p2.id, {type: 'updateLetters', letters: p2.letters});
     if (game.status === 'playing') game.turnTimer = setTimeout(() => endRound(gameId), ROUND_TIME_MS);
 }
 
-// --- CORRECTED handleWordSubmit with Blooper History ---
 function handleWordSubmit(playerId, word) {
     const player = players[playerId]; if (!player?.gameId) return;
     const game = games[player.gameId]; if (!game || game.status !== 'playing') return;
-    const normalizedWord = word.trim().toUpperCase();
-    if (!game.playedWords) game.playedWords = []; // Ensure history array exists
-
-    let tempLetters = [...player.letters]; // Make a copy
-    let validLetters = true;
-    if (!normalizedWord) {
-        validLetters = false;
+    const normalizedWord = word.trim().toUpperCase(); if (!game.playedWords) game.playedWords = [];
+    let tempLetters = [...player.letters]; let validLetters = true; if (!normalizedWord) validLetters = false;
+    else { for (const char of normalizedWord) { const i = tempLetters.indexOf(char); if (i === -1) { validLetters = false; break; } tempLetters.splice(i, 1); } }
+    const lowerCaseWord = normalizedWord.toLowerCase(); const isValidWord = wordSet.has(lowerCaseWord); const isLen = normalizedWord.length >= 3; const MAX_HISTORY = 20;
+    if (validLetters && isValidWord && isLen) {
+        const soldiers = calculateSoldiers(lowerCaseWord); console.log(`SERVER: ${player.nickname} valid word "${normalizedWord}" (${soldiers})`); player.letters = getRandomLetters();
+        game.playedWords.push({ type: 'valid', word: normalizedWord, player: player.nickname, soldiers }); if (game.playedWords.length > MAX_HISTORY) game.playedWords = game.playedWords.slice(-MAX_HISTORY);
+        sendToPlayer(playerId, { type: 'wordValidated', playerId, word: normalizedWord, isValid: true, soldierCount: soldiers, newLetters: player.letters }); const oppId = (playerId === game.player1Id) ? game.player2Id : game.player1Id; sendToPlayer(oppId, { type: 'wordValidated', playerId, word: normalizedWord, isValid: true, soldierCount: soldiers }); broadcast(game.gameId, { type: 'updateWordHistory', playedWords: game.playedWords });
     } else {
-        for (const char of normalizedWord) {
-            const index = tempLetters.indexOf(char);
-            if (index === -1) { validLetters = false; break; }
-            tempLetters.splice(index, 1); // Consume the letter
-        }
-    }
-
-    const lowerCaseWord = normalizedWord.toLowerCase();
-    const isValidWord = wordSet.has(lowerCaseWord);
-    const isValidLength = normalizedWord.length >= 3;
-    const MAX_HISTORY = 20; // Define max history size
-
-    if (validLetters && isValidWord && isValidLength) {
-        // --- Valid Word Logic ---
-        const soldierCount = calculateSoldiers(lowerCaseWord);
-        console.log(`SERVER: ${player.nickname} valid word "${normalizedWord}" (${soldierCount} soldiers)`);
-        player.letters = getRandomLetters(LETTERS_PER_PLAYER);
-        // Add valid word to history
-        game.playedWords.push({ type: 'valid', word: normalizedWord, player: player.nickname, soldiers: soldierCount });
-        if (game.playedWords.length > MAX_HISTORY) game.playedWords = game.playedWords.slice(-MAX_HISTORY);
-        // Send updates
-        sendToPlayer(playerId, { type: 'wordValidated', playerId, word: normalizedWord, isValid: true, soldierCount, newLetters: player.letters });
-        const opponentId = (playerId === game.player1Id) ? game.player2Id : game.player1Id;
-        sendToPlayer(opponentId, { type: 'wordValidated', playerId, word: normalizedWord, isValid: true, soldierCount });
-        broadcast(game.gameId, { type: 'updateWordHistory', playedWords: game.playedWords });
-
-    } else {
-        // --- Invalid Word Logic ---
-        console.log(`SERVER: ${player.nickname} invalid word "${normalizedWord}" (L:${validLetters}, D:${isValidWord}, Len:${isValidLength})`);
-        // Add invalid word ("blooper") to history - only if it was actually submitted (not empty)
-        if (normalizedWord) {
-             game.playedWords.push({ type: 'invalid', word: normalizedWord, player: player.nickname });
-             if (game.playedWords.length > MAX_HISTORY) game.playedWords = game.playedWords.slice(-MAX_HISTORY);
-             // Broadcast updated history including the blooper
-             broadcast(game.gameId, { type: 'updateWordHistory', playedWords: game.playedWords });
-        }
-        // Only notify the submitting player that it was invalid
+        console.log(`SERVER: ${player.nickname} invalid word "${normalizedWord}" (L:${validLetters}, D:${isValidWord}, Len:${isLen})`);
+        if (normalizedWord) { game.playedWords.push({ type: 'invalid', word: normalizedWord, player: player.nickname }); if (game.playedWords.length > MAX_HISTORY) game.playedWords = game.playedWords.slice(-MAX_HISTORY); broadcast(game.gameId, { type: 'updateWordHistory', playedWords: game.playedWords }); }
         sendToPlayer(playerId, { type: 'wordValidated', playerId, word: normalizedWord, isValid: false });
     }
 }
-// --- End CORRECTED handleWordSubmit ---
 
-
+// --- CORRECTED handleCastleHit with Logging ---
 function handleCastleHit(clientPlayerId, attackingPlayerId, soldierCount) {
-    console.log(`SERVER: Received castleHit from client ${clientPlayerId}. Attacker ID: ${attackingPlayerId}, Count: ${soldierCount}`); // LOGGING
-    const attacker = players[attackingPlayerId]; if (!attacker?.gameId) { console.warn(`SERVER: Attacker ${attackingPlayerId} not found for castleHit.`); return; }
-    const game = games[attacker.gameId]; if (!game || game.status !== 'playing') { console.warn(`SERVER: Game ${attacker.gameId} not active for castleHit.`); return; }
-    let targetPlayerId = null; if (attackingPlayerId === game.player1Id) targetPlayerId = game.player2Id; else if (attackingPlayerId === game.player2Id) targetPlayerId = game.player1Id; else { console.error(`SERVER: Attacker ID mismatch`); return; }
-    const targetPlayer = players[targetPlayerId]; console.log(`SERVER: Target player for hit is ${targetPlayerId} (${targetPlayer?.nickname})`); // LOGGING
+    console.log(`SERVER: Received castleHit from client ${clientPlayerId}. Attacker ID: ${attackingPlayerId}, Count: ${soldierCount}`); // Log 1
+
+    if (!attackingPlayerId || typeof attackingPlayerId !== 'string') {
+        console.error(`SERVER: Invalid attackingPlayerId received: ${attackingPlayerId}. Aborting hit.`); return;
+    }
+
+    const attacker = players[attackingPlayerId];
+    if (!attacker?.gameId) { console.warn(`SERVER: Attacker ${attackingPlayerId} not found/in game.`); return; }
+
+    const game = games[attacker.gameId];
+    if (!game || game.status !== 'playing') { console.warn(`SERVER: Game ${attacker.gameId} not active.`); return; }
+
+    let targetPlayerId = null;
+    if (attackingPlayerId === game.player1Id) targetPlayerId = game.player2Id;
+    else if (attackingPlayerId === game.player2Id) targetPlayerId = game.player1Id;
+    else { console.error(`SERVER: Attacker ID ${attackingPlayerId} mismatch in game ${attacker.gameId}`); return; }
+
+    const targetPlayer = players[targetPlayerId];
+    console.log(`SERVER: Target player for hit is ${targetPlayerId} (${targetPlayer?.nickname})`); // Log 2
+
     if (targetPlayer && targetPlayer.hp > 0) {
         const damage = soldierCount; const oldHp = targetPlayer.hp; targetPlayer.hp = Math.max(0, targetPlayer.hp - damage);
-        console.log(`SERVER: Game ${game.gameId}: Reducing ${targetPlayer.nickname} HP ${oldHp} -> ${targetPlayer.hp}`); // LOGGING
-        const updatePayload = { type: 'updateHP', playerId: targetPlayerId, hp: targetPlayer.hp, attackerId };
-        console.log(`SERVER: Broadcasting updateHP:`, updatePayload); // LOGGING
-        broadcast(game.gameId, updatePayload);
-        if (targetPlayer.hp <= 0) { game.status = 'ended'; game.endedTimestamp = Date.now(); if(game.turnTimer) clearTimeout(game.turnTimer); game.turnTimer = null; console.log(`SERVER: Game ${game.gameId} ended. Winner: ${attacker.nickname}`); broadcast(game.gameId, { type: 'gameOver', winnerId: attackingPlayerId, loserId: targetPlayerId }); }
+        console.log(`SERVER: Game ${game.gameId}: Reducing ${targetPlayer.nickname} HP ${oldHp} -> ${targetPlayer.hp}`); // Log 3
+
+        const attackerIdForPayload = attackingPlayerId; // Use a new variable to ensure scope
+        console.log(`SERVER: Attacker ID being used for payload: ${attackerIdForPayload}`); // Log 4
+
+        const updatePayload = { type: 'updateHP', playerId: targetPlayerId, hp: targetPlayer.hp, attackerId: attackerIdForPayload }; // Use explicit variable
+        console.log(`SERVER: Broadcasting updateHP Payload:`, updatePayload); // Log 5
+
+        if (!updatePayload.attackerId) { console.error("SERVER: CRITICAL - attackerId missing before broadcast!", updatePayload); return; }
+
+        broadcast(game.gameId, updatePayload); // Broadcast
+
+        if (targetPlayer.hp <= 0) {
+            game.status = 'ended'; game.endedTimestamp = Date.now(); if(game.turnTimer) clearTimeout(game.turnTimer); game.turnTimer = null;
+            console.log(`SERVER: Game ${game.gameId} ended. Winner: ${attacker.nickname}`);
+            broadcast(game.gameId, { type: 'gameOver', winnerId: attackingPlayerId, loserId: targetPlayerId });
+        }
     } else { console.log(`SERVER: Target player ${targetPlayerId} not found or already 0 HP.`); }
  }
+// --- End CORRECTED handleCastleHit ---
+
 
 // --- Express Static File Serving ---
 app.use(express.static(__dirname));
