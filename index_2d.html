@@ -4,32 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D Word Battle</title>
+    <!-- Ensure the path to your CSS file is correct -->
     <link rel="stylesheet" href="style_2d.css">
 </head>
 <body>
+    <!-- Main wrapper for vertical centering -->
     <div id="main-wrapper">
 
-        <!-- Game Area: Canvas + Top/Center UI -->
+        <!-- Game container holds canvas and elements positioned over it -->
         <div id="game-container">
             <canvas id="game-canvas-2d" width="800" height="450"></canvas>
+
+            <!-- Overlay for elements positioned absolutely over the canvas -->
             <div id="ui-overlay">
-                <!-- Player Info & Center Info -->
-                <div class="player-info player1-info" style="display: none;"> <!-- ... --> </div>
-                <div class="player-info player2-info" style="display: none;"> <!-- ... --> </div>
-                <div id="center-info" class="overlay-box" style="display: none;"> <!-- ... --> </div>
+                <!-- Player Info Boxes -->
+                <div class="player-info player1-info" style="display: none;">
+                   <h3 id="player1-name">Player 1</h3>
+                   <div class="hp-bar-container"><div id="player1-hp-bar" class="hp-bar"></div></div>
+                   <span id="player1-hp">HP: 100</span>
+               </div>
+                <div class="player-info player2-info" style="display: none;">
+                   <h3 id="player2-name">Player 2</h3>
+                    <div class="hp-bar-container"><div id="player2-hp-bar" class="hp-bar"></div></div>
+                   <span id="player2-hp">HP: 100</span>
+               </div>
+               <!-- Center Info Box -->
+                <div id="center-info" class="overlay-box" style="display: none;">
+                   <div id="timer">Time: 60</div>
+                   <div id="game-message">Waiting...</div>
+               </div>
 
-                <!-- Nickname Prompt & Game Over -->
-                <div id="nickname-prompt" class="overlay-box"> <!-- ... --> </div>
-                <div id="game-over" class="overlay-box" style="display: none;"> <!-- ... --> </div>
+                <!-- Nickname Prompt (Initially Visible) -->
+                <div id="nickname-prompt" class="overlay-box">
+                   <h2>Enter Your Nickname</h2>
+                   <input type="text" id="nickname-input" maxlength="12" placeholder="Max 12 chars">
+                   <button id="join-button" disabled>Join Battle!</button>
+                   <p id="connection-status">Connecting...</p>
+                </div>
+                <!-- Game Over Screen (Initially Hidden) -->
+                <div id="game-over" class="overlay-box" style="display: none;">
+                   <h2 id="game-over-message">Game Over!</h2>
+                   <button id="play-again-button">Play Again?</button>
+                </div>
 
-                <!-- Word History Box is MOVED OUT of here -->
+                <!-- Word History Box has been MOVED OUTSIDE the overlay -->
 
-            </div>
-        </div>
+            </div> <!-- End of ui-overlay -->
+        </div> <!-- End of game-container -->
 
-        <!-- Player Controls Area: BELOW the game container -->
+        <!-- Player Controls Box (Initially Hidden) -->
         <div id="player-controls" class="overlay-box" style="display: none;">
-             <div id="letters-display"></div>
+             <div id="letters-display">
+                 <!-- JS Populates Tiles -->
+             </div>
              <div id="input-row">
                  <input type="text" id="word-input" placeholder="Enter word (3+ letters)..." maxlength="15" autocomplete="off" disabled>
                  <button id="submit-word-button" disabled>Submit Word</button>
@@ -37,16 +64,17 @@
              <div id="word-feedback"></div>
         </div>
 
-        <!-- Word History Box: BELOW player controls -->
+        <!-- Word History Box (Initially Hidden) - Positioned below player controls -->
         <div id="word-history-box" class="overlay-box" style="display: none;">
              <h4>Played Words</h4>
              <ul id="word-history-list">
-                 <!-- Words will be added here by JS -->
+                 <!-- JS adds li elements here -->
              </ul>
         </div>
-        <!-- End Word History Box -->
 
     </div> <!-- End of main-wrapper -->
+
+    <!-- Ensure the path to your JS file is correct -->
     <script src="script_2d.js"></script>
 </body>
 </html>

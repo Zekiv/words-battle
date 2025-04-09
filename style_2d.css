@@ -1,92 +1,151 @@
-/* style_2d.css */
+/* style_2d.css (Complete - History Box Styles Adjusted) */
+body {
+    margin: 0;
+    overflow-y: auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #333;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px 0;
+    box-sizing: border-box;
+}
 
-/* ... Keep all existing styles up to #player-controls ... */
-
-#player-controls {
-    width: 800px;
-    max-width: 95%;
+#main-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 15px;
-    box-sizing: border-box;
-    margin-bottom: 15px; /* <<< Add margin below controls to separate from history */
+    width: 100%;
 }
 
-/* ... Keep #letters-display, .letter-tile, #input-row, #word-input, #submit-word-button, #word-feedback ... */
+#game-container {
+    position: relative;
+    width: 800px;
+    height: 450px;
+    max-width: 95%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 15px; /* Space below game container */
+}
 
+#game-canvas-2d {
+    display: block;
+    background-color: #5d9e5f; /* Fallback */
+    width: 100%;
+    height: 100%;
+}
 
-/* --- Word History Box Styles (Updated) --- */
-#word-history-box {
-    /* Removed position: absolute, bottom, left */
-    width: 500px; /* Adjust width - maybe wider now? */
-    max-width: 90%; /* Responsive */
-    max-height: 150px; /* Adjust max height as needed */
-    overflow-y: auto;
-    font-size: 0.9em; /* Slightly larger font? */
-    text-align: left;
-    background-color: rgba(10, 20, 10, 0.7); /* Darker background? */
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.overlay-box {
+    background-color: rgba(0, 0, 0, 0.75);
     padding: 10px 15px;
-    /* display: none; /* Controlled by JS */
-    /* Inherits .overlay-box styles like border-radius, border, box-shadow */
-    box-sizing: border-box;
-}
-
-#word-history-box h4 {
-    margin: 0 0 8px 0; /* More margin */
+    border-radius: 6px;
+    margin: 5px;
+    pointer-events: all;
     text-align: center;
-    color: #ffcc00;
-    border-bottom: 1px solid #555;
-    padding-bottom: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 11;
 }
 
-#word-history-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+/* Nickname Prompt & Game Over (Centered by ui-overlay) */
+#nickname-prompt { width: 300px; }
+#nickname-prompt h2 { margin-top: 0; color: #ffcc00; }
+#nickname-input { padding: 8px; margin-bottom: 10px; border: 1px solid #555; background-color: #444; color: #eee; border-radius: 4px; width: calc(100% - 20px); }
+#join-button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; width: 100%; box-sizing: border-box; }
+#join-button:hover { background-color: #0056b3; }
+#join-button:disabled { background-color: #555; cursor: not-allowed; color: #aaa; }
+#connection-status { font-size: 0.9em; color: #aaa; margin-top: 10px; min-height: 1.2em; }
+#game-over { width: 350px; background-color: rgba(0, 0, 0, 0.9); padding: 30px; border: 2px solid #ffcc00; }
+#game-over-message { color: #ffcc00; margin-top: 0; }
+#play-again-button { padding: 12px 25px; margin-top: 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1.1em; }
+#play-again-button:hover { background-color: #0056b3; }
 
-#word-history-list li {
-    margin-bottom: 5px; /* More spacing */
-    padding-bottom: 3px;
-    border-bottom: 1px dotted #555; /* Darker dotted line */
-    line-height: 1.4;
-    overflow: hidden; /* Contain floated element */
-}
-#word-history-list li:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
+/* Player Info (Absolute within game-container) */
+.player-info { position: absolute; padding: 8px 12px; background-color: rgba(0, 0, 0, 0.6); border-radius: 5px; min-width: 140px; text-align: left; font-size: 0.9em; }
+.player-info h3 { margin: 0 0 5px 0; font-size: 1.1em; }
+.player1-info { top: 10px; left: 10px; }
+.player2-info { top: 10px; right: 10px; text-align: right; }
+.hp-bar-container { width: 100%; height: 12px; background-color: #555; border-radius: 4px; margin: 5px 0; overflow: hidden; border: 1px solid #888; }
+.hp-bar { height: 100%; width: 100%; background-color: #4CAF50; border-radius: 3px; transition: width 0.5s ease-out; }
+#player1-hp-bar { background-color: #4CAF50; }
+#player2-hp-bar { background-color: #F44336; }
 
-#word-history-list .word {
-    font-weight: bold;
-    color: #ffffff;
-    margin-right: 5px; /* Space after word */
-}
-#word-history-list .player {
-    font-style: italic;
-    color: #cccccc; /* Lighter gray */
-    font-size: 0.9em;
-}
-#word-history-list .soldiers {
-    float: right;
-    color: #ffdd88;
-    font-weight: bold;
-    font-size: 0.9em;
-    margin-left: 10px; /* Space before count */
-}
+/* Center Info (Absolute within game-container) */
+#center-info { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); padding: 5px 15px; }
+#timer { font-size: 1.1em; margin-bottom: 3px; }
+#game-message { font-size: 0.9em; color: #ffdd88; min-height: 1.2em; font-weight: bold; }
 
-/* Scrollbar styling (Keep as is or adjust) */
+/* Player Controls (Block element below game-container) */
+#player-controls {
+    width: 800px; max-width: 95%; display: flex; flex-direction: column;
+    align-items: center; padding: 15px; box-sizing: border-box;
+    margin-bottom: 15px; /* Space below controls */
+}
+#letters-display { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; background-color: rgba(0, 0, 0, 0.3); padding: 8px; border-radius: 4px; width: auto; max-width: 100%; min-height: 45px; }
+.letter-tile { background-color: #e0d6b3; color: #3b3a39; font-weight: bold; font-size: 1.5em; width: 45px; height: 45px; display: inline-flex; justify-content: center; align-items: center; border: 1px solid #a89f85; border-radius: 4px; user-select: none; box-shadow: 2px 2px 3px rgba(0,0,0,0.3); cursor: default; }
+#input-row { display: flex; width: 100%; max-width: 500px; gap: 10px; margin-bottom: 10px; }
+#word-input { padding: 10px; flex-grow: 1; border: 1px solid #555; background-color: #444; color: #eee; border-radius: 4px; text-transform: uppercase; font-size: 1em; }
+#word-input::placeholder { color: #aaa; text-transform: none; }
+#word-input:disabled { background-color: #555; cursor: not-allowed; color: #999; }
+#submit-word-button { padding: 10px 18px; flex-shrink: 0; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; font-size: 1em; font-weight: bold; }
+#submit-word-button:hover { background-color: #218838; }
+#submit-word-button:disabled { background-color: #555; cursor: not-allowed; color: #aaa; }
+#word-feedback { margin-top: 5px; min-height: 1.4em; font-size: 0.95em; color: #ffdddd; font-weight: bold; width: 100%; max-width: 500px; text-align: center; }
+
+/* Word History Box (Block element below player-controls) */
+#word-history-box {
+    /* Removed positioning */
+    width: 500px; max-width: 90%; max-height: 150px; overflow-y: auto;
+    font-size: 0.9em; text-align: left; background-color: rgba(10, 20, 10, 0.7);
+    padding: 10px 15px; box-sizing: border-box;
+    /* display: none; /* Controlled by JS */
+}
+#word-history-box h4 { margin: 0 0 8px 0; text-align: center; color: #ffcc00; border-bottom: 1px solid #555; padding-bottom: 5px; }
+#word-history-list { list-style: none; padding: 0; margin: 0; }
+#word-history-list li { margin-bottom: 5px; padding-bottom: 3px; border-bottom: 1px dotted #555; line-height: 1.4; overflow: hidden; }
+#word-history-list li:last-child { border-bottom: none; margin-bottom: 0; }
+#word-history-list .word { font-weight: bold; color: #ffffff; margin-right: 5px; }
+#word-history-list .player { font-style: italic; color: #cccccc; font-size: 0.9em; }
+#word-history-list .soldiers { float: right; color: #ffdd88; font-weight: bold; font-size: 0.9em; margin-left: 10px; }
 #word-history-box::-webkit-scrollbar { width: 6px; }
 #word-history-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
 #word-history-box::-webkit-scrollbar-thumb { background-color: rgba(150,150,150,0.5); border-radius: 3px; }
 
 /* Responsive Adjustments */
 @media (max-width: 820px) {
-    #word-history-box {
-        width: 90%; /* Wider on smaller screens */
-        max-height: 120px;
-    }
+    #game-container { width: 95vw; height: calc(95vw*(450/800)); margin-bottom: 10px; }
+    #player-controls { width: 95vw; padding: 10px; margin-bottom: 10px; }
+    #word-history-box { width: 90%; max-height: 120px; }
+    .player-info { font-size: .8em; min-width: 100px; padding: 6px 8px; }
+    .letter-tile { width: 38px; height: 38px; font-size: 1.3em; }
+    #input-row { max-width: 90%; }
+    #word-input { font-size: .9em; padding: 8px; }
+    #submit-word-button { font-size: .9em; padding: 8px 12px; }
+    #word-feedback { font-size: .9em; }
 }
-
-/* ... Keep other @media rules ... */
+@media (max-width: 450px) {
+    .letter-tile { width: 32px; height: 32px; font-size: 1.1em; gap: 4px; }
+    #input-row { flex-direction: column; gap: 8px; }
+    #submit-word-button { width: 100%; }
+    #word-history-box { width: 90%; font-size: .7em; max-height: 100px; }
+    .player-info h3 { font-size: 1em; } .player-info { font-size: .75em; min-width: 80px; }
+    #center-info { padding: 3px 10px; } #timer { font-size: 1em; } #game-message { font-size: .8em; }
+}
